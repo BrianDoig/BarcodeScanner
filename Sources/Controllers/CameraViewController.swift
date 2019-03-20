@@ -43,6 +43,9 @@ public final class CameraViewController: UIViewController {
   // Constraints for the focus view when it gets bigger in size.
   private var animatedFocusViewConstraints = [NSLayoutConstraint]()
 
+  // Sets the video zoom factor of the capture device
+  public var videoZoomFactor: CGFloat = 1.0
+    
   // MARK: - Video
 
   /// Video preview layer.
@@ -241,11 +244,32 @@ public final class CameraViewController: UIViewController {
         captureSession.removeInput(currentInput)
       }
       captureSession.addInput(newInput)
+      setZoomFactor(videoZoomFactor)
       captureSession.commitConfiguration()
       flashButton.isHidden = position == .front
     } catch {
       delegate?.cameraViewController(self, didReceiveError: error)
       return
+    }
+  }
+    
+  /// Set the zoom level of the camera to the requested zoom
+  private func setZoomFactor(_ zoom: CGFloat) {
+    guard let captureDevice = captureDevice else { return }
+    let clampedZoom: CGFloat
+    if #available(iOS 11.0, *) {
+      clampedZoom = zoom < captureDevice.minAvailableVideoZoomFactor ? captureDevice.minAvailableVideoZoomFactor : zoom > captureDevice.maxAvailableVideoZoomFactor ? captureDevice.maxAvailableVideoZoomFactor : zoom
+    } else {
+      // Fallback on earlier versions
+      clampedZoom = zoom
+    }
+    
+    do {
+      try captureDevice.lockForConfiguration()
+      captureDevice.videoZoomFactor = clampedZoom
+      captureDevice.unlockForConfiguration()
+    } catch {
+      print("Error setting zoom factor: \(error)")
     }
   }
 

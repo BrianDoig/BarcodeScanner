@@ -53,6 +53,16 @@ open class BarcodeScannerViewController: UIViewController {
       cameraViewController.metadata = metadata
     }
   }
+    
+  /// Sets the video zoom factor of the capture device
+  public var videoZoomFactor: CGFloat {
+    get {
+      return cameraViewController.videoZoomFactor
+    }
+    set(value) {
+      cameraViewController.videoZoomFactor = value
+    }
+  }
 
   // MARK: - Private properties
 
